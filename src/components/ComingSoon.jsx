@@ -5,11 +5,24 @@ export default function ComingSoon() {
   const containerRef = useRef(null);
   const blobsRef = useRef([]);
   const badgeRef = useRef(null);
-  const headingCharsRef = useRef([]);
-  const soonCharsRef = useRef([]);
+  const headingRef = useRef(null);
   const subtitleRef = useRef(null);
   const socialsRef = useRef([]);
   const dividersRef = useRef([]);
+  const spotlightRef = useRef(null);
+  const roleRefs = useRef([]);
+  const underlineRef = useRef(null);
+  const underlinePulseRef = useRef(null);
+
+  const roles = [
+    'Webflow Developer',
+    'WordPress Developer',
+    'GSAP Animator',
+    'Frontend Designer'
+  ];
+
+  const comingText = 'Coming';
+  const soonText = 'Soon';
 
   const handleSocialMouseMove = (e, el) => {
     if (!el) return;
@@ -39,33 +52,30 @@ export default function ComingSoon() {
     let mouseMoveHandler;
 
     const ctx = gsap.context(() => {
-      // --- Blobs smooth float animation (no jumping) ---
+      // --- Blobs smooth float animation ---
       blobsRef.current.forEach((blob, i) => {
         if (!blob) return;
 
-        // Fade in blobs
         gsap.to(blob, {
           opacity: 0.6,
-          duration: 2,
-          delay: 0.3 + i * 0.15,
+          duration: 3,
+          delay: 0.5 + i * 0.2,
           ease: 'power2.out',
         });
 
-        // Smooth continuous floating — separate x and y for organic feel
         gsap.to(blob, {
           keyframes: [
-            { x: 15, y: -20, duration: 8 },
-            { x: -10, y: 15, duration: 7 },
-            { x: 20, y: 10, duration: 9 },
-            { x: -15, y: -10, duration: 8 },
-            { x: 0, y: 0, duration: 7 },
+            { x: 30, y: -40, duration: 20 },
+            { x: -20, y: 30, duration: 18 },
+            { x: 40, y: 20, duration: 22 },
+            { x: -30, y: -20, duration: 20 },
+            { x: 0, y: 0, duration: 18 },
           ],
           repeat: -1,
           ease: 'sine.inOut',
           delay: i * 1.5,
         });
 
-        // Slow scale breathing
         gsap.to(blob, {
           scale: 1.08,
           duration: 6 + i * 2,
@@ -76,9 +86,20 @@ export default function ComingSoon() {
         });
       });
 
-      // --- Mouse parallax (smooth, no overwrite conflicts) ---
+      // --- Mouse events (Parallax + Spotlight) ---
       mouseMoveHandler = (e) => {
         const { clientX, clientY } = e;
+
+        if (spotlightRef.current) {
+          gsap.to(spotlightRef.current, {
+            x: clientX,
+            y: clientY,
+            opacity: 1,
+            duration: 1.5,
+            ease: 'power3.out'
+          });
+        }
+
         const centerX = window.innerWidth / 2;
         const centerY = window.innerHeight / 2;
         const deltaX = (clientX - centerX) / centerX;
@@ -86,12 +107,12 @@ export default function ComingSoon() {
 
         blobsRef.current.forEach((blob, i) => {
           if (!blob) return;
-          const speed = (i + 1) * 12;
+          const speed = (i + 1) * 20;
           gsap.to(blob, {
-            x: `+=${deltaX * speed * 0.05}`,
-            y: `+=${deltaY * speed * 0.05}`,
-            duration: 2,
-            ease: 'power3.out',
+            x: `+=${deltaX * speed * 0.08}`,
+            y: `+=${deltaY * speed * 0.08}`,
+            duration: 3,
+            ease: 'power2.out',
             overwrite: false,
           });
         });
@@ -102,54 +123,20 @@ export default function ComingSoon() {
       // --- Content reveal animations ---
       const revealTl = gsap.timeline({ delay: 0.3 });
 
-      // Badge
       revealTl.fromTo(
         badgeRef.current,
         { opacity: 0, y: -15 },
         { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }
       );
 
-      // "Coming" — split mask reveal per character
-      const comingChars = headingCharsRef.current.filter(Boolean);
+      // Fade in the whole heading statically
       revealTl.fromTo(
-        comingChars,
-        {
-          yPercent: 120,
-          opacity: 0,
-          rotationX: -40,
-        },
-        {
-          yPercent: 0,
-          opacity: 1,
-          rotationX: 0,
-          duration: 0.9,
-          stagger: 0.04,
-          ease: 'power4.out',
-        },
-        '-=0.3'
+        headingRef.current,
+        { opacity: 0, y: 10 },
+        { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' },
+        '-=0.6'
       );
 
-      // "Soon" — split mask reveal per character with slight delay
-      const soonChars = soonCharsRef.current.filter(Boolean);
-      revealTl.fromTo(
-        soonChars,
-        {
-          yPercent: 120,
-          opacity: 0,
-          rotationX: -40,
-        },
-        {
-          yPercent: 0,
-          opacity: 1,
-          rotationX: 0,
-          duration: 0.9,
-          stagger: 0.05,
-          ease: 'power4.out',
-        },
-        '-=0.5'
-      );
-
-      // Subtitle
       revealTl.fromTo(
         subtitleRef.current,
         { opacity: 0, y: 15 },
@@ -157,12 +144,11 @@ export default function ComingSoon() {
         '-=0.3'
       );
 
-      // Social links — Enhanced Premium Reveal (Blur + Scale + Y)
       const socialEls = socialsRef.current.filter(Boolean);
       revealTl.fromTo(
         socialEls,
-        { 
-          opacity: 0, 
+        {
+          opacity: 0,
           y: 40,
           scale: 0.9,
           filter: 'blur(10px)'
@@ -179,7 +165,6 @@ export default function ComingSoon() {
         '-=0.6'
       );
 
-      // Dividers
       const dividerEls = dividersRef.current.filter(Boolean);
       revealTl.fromTo(
         dividerEls,
@@ -187,6 +172,86 @@ export default function ComingSoon() {
         { opacity: 1, scaleY: 1, duration: 0.4, stagger: 0.08 },
         '-=0.4'
       );
+
+      // --- Underline Animation ---
+      const underline = underlineRef.current;
+      const pulse = underlinePulseRef.current;
+      if (underline && pulse) {
+        const length = underline.getTotalLength();
+        gsap.set(underline, { strokeDasharray: length, strokeDashoffset: length });
+        gsap.set(pulse, { strokeDasharray: `10, ${length}`, strokeDashoffset: length });
+
+        revealTl.to(underline, {
+          strokeDashoffset: 0,
+          duration: 1.2,
+          ease: 'power2.inOut'
+        }, '-=0.5');
+
+        const startPulse = () => {
+          gsap.fromTo(pulse,
+            { strokeDashoffset: length, opacity: 0 },
+            {
+              strokeDashoffset: 0,
+              opacity: 0.8,
+              duration: 1.5,
+              ease: 'power1.inOut',
+              onComplete: () => {
+                gsap.to(pulse, { opacity: 0, duration: 0.3 });
+                gsap.delayedCall(3, startPulse);
+              }
+            }
+          );
+        };
+        gsap.delayedCall(3, startPulse);
+      }
+
+      // --- Infinite Role Loop ---
+      const startRoleLoop = () => {
+        const roleEls = roleRefs.current.filter(Boolean);
+        if (!roleEls.length) return;
+
+        let currentIndex = 0;
+
+        const cycleRoles = () => {
+          const currentRole = roleEls[currentIndex];
+          if (!currentRole) return;
+          const chars = currentRole.querySelectorAll('.role-char');
+
+          const tl = gsap.timeline({
+            onComplete: () => {
+              gsap.delayedCall(2, () => {
+                gsap.to(chars, {
+                  y: -20,
+                  opacity: 0,
+                  stagger: 0.02,
+                  duration: 0.6,
+                  ease: 'power2.in',
+                  onComplete: () => {
+                    gsap.set(currentRole, { visibility: 'hidden' });
+                    currentIndex = (currentIndex + 1) % roleEls.length;
+                    cycleRoles();
+                  }
+                });
+              });
+            }
+          });
+
+          gsap.set(currentRole, { visibility: 'visible' });
+          gsap.set(chars, { y: 20, opacity: 0 });
+
+          tl.to(chars, {
+            y: 0,
+            opacity: 1,
+            stagger: 0.03,
+            duration: 0.8,
+            ease: 'power3.out'
+          });
+        };
+
+        gsap.delayedCall(1.0, cycleRoles);
+      };
+
+      startRoleLoop();
     }, containerRef);
 
     return () => {
@@ -197,66 +262,73 @@ export default function ComingSoon() {
     };
   }, []);
 
-  const comingText = 'Coming';
-  const soonText = 'Soon';
-
   return (
     <div ref={containerRef}>
-      {/* Grain */}
-      <div className="grain-overlay" />
-
-      {/* Vignette */}
+      <div className="texture-subtle" />
       <div className="vignette" />
 
-      {/* Blobs */}
       <div className="blobs-container">
         <div ref={(el) => (blobsRef.current[0] = el)} className="blob blob--1" />
         <div ref={(el) => (blobsRef.current[1] = el)} className="blob blob--2" />
         <div ref={(el) => (blobsRef.current[2] = el)} className="blob blob--3" />
         <div ref={(el) => (blobsRef.current[3] = el)} className="blob blob--4" />
+        <div ref={spotlightRef} className="spotlight" />
       </div>
 
-      {/* Content */}
       <main className="coming-soon">
-        {/* Badge */}
         <div ref={badgeRef} className="badge">
           <span className="badge__dot" />
           <span className="badge__text">In Progress</span>
         </div>
 
-        {/* Heading */}
-        <h1 className="heading">
+        <h1 className="heading" ref={headingRef}>
           <span className="heading__line">
-            {comingText.split('').map((char, i) => (
-              <span
-                key={`c-${i}`}
-                ref={(el) => (headingCharsRef.current[i] = el)}
-                className="heading__char"
-              >
-                {char}
-              </span>
-            ))}
+            <span className="heading__char">Coming</span>
           </span>
           <span className="heading__char">&nbsp;</span>
           <span className="heading__line heading__line--soon">
-            {soonText.split('').map((char, i) => (
-              <span
-                key={`s-${i}`}
-                ref={(el) => (soonCharsRef.current[i] = el)}
-                className="heading__char heading__char--italic"
-              >
-                {char}
-              </span>
-            ))}
+            <span className="heading__char heading__char--italic">Soon</span>
+            <div className="heading__underline-container">
+              <svg width="100%" height="100%" viewBox="0 0 100 12" preserveAspectRatio="none">
+                <path
+                  ref={underlineRef}
+                  d="M0,2 Q50,10 100,2"
+                  className="heading__underline"
+                />
+                <path
+                  ref={underlinePulseRef}
+                  d="M0,2 Q50,10 100,2"
+                  className="heading__underline-pulse"
+                />
+              </svg>
+            </div>
           </span>
         </h1>
 
-        {/* Subtitle */}
+        <div className="roles-wrapper">
+          {roles.map((role, roleIdx) => (
+            <div
+              key={roleIdx}
+              ref={(el) => (roleRefs.current[roleIdx] = el)}
+              className="role-item"
+            >
+              {role.split(' ').map((word, wordIdx) => (
+                <span key={wordIdx} className="role-word">
+                  {word.split('').map((char, charIdx) => (
+                    <span key={charIdx} className="role-char-container">
+                      <span className="role-char">{char}</span>
+                    </span>
+                  ))}
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
+
         <p ref={subtitleRef} className="subtitle">
           Something new is being crafted
         </p>
 
-        {/* Social Links */}
         <div className="socials">
           <a
             ref={(el) => (socialsRef.current[0] = el)}
