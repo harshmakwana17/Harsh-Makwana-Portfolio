@@ -5,7 +5,8 @@ export default function ComingSoon() {
   const containerRef = useRef(null);
   const blobsRef = useRef([]);
   const badgeRef = useRef(null);
-  const headingRef = useRef(null);
+  const headingCharsRef = useRef([]);
+  const soonCharsRef = useRef([]);
   const subtitleRef = useRef(null);
   const socialsRef = useRef([]);
   const dividersRef = useRef([]);
@@ -129,12 +130,42 @@ export default function ComingSoon() {
         { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }
       );
 
-      // Fade in the whole heading statically
+      const comingChars = headingCharsRef.current.filter(Boolean);
       revealTl.fromTo(
-        headingRef.current,
-        { opacity: 0, y: 10 },
-        { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' },
-        '-=0.6'
+        comingChars,
+        {
+          yPercent: 120,
+          opacity: 0,
+          rotationX: -40,
+        },
+        {
+          yPercent: 0,
+          opacity: 1,
+          rotationX: 0,
+          duration: 0.9,
+          stagger: 0.04,
+          ease: 'power4.out',
+        },
+        '-=0.3'
+      );
+
+      const soonChars = soonCharsRef.current.filter(Boolean);
+      revealTl.fromTo(
+        soonChars,
+        {
+          yPercent: 120,
+          opacity: 0,
+          rotationX: -40,
+        },
+        {
+          yPercent: 0,
+          opacity: 1,
+          rotationX: 0,
+          duration: 0.9,
+          stagger: 0.05,
+          ease: 'power4.out',
+        },
+        '-=0.5'
       );
 
       revealTl.fromTo(
@@ -281,13 +312,29 @@ export default function ComingSoon() {
           <span className="badge__text">In Progress</span>
         </div>
 
-        <h1 className="heading" ref={headingRef}>
+        <h1 className="heading">
           <span className="heading__line">
-            <span className="heading__char">Coming</span>
+            {comingText.split('').map((char, i) => (
+              <span
+                key={`c-${i}`}
+                ref={(el) => (headingCharsRef.current[i] = el)}
+                className="heading__char"
+              >
+                {char}
+              </span>
+            ))}
           </span>
           <span className="heading__char">&nbsp;</span>
           <span className="heading__line heading__line--soon">
-            <span className="heading__char heading__char--italic">Soon</span>
+            {soonText.split('').map((char, i) => (
+              <span
+                key={`s-${i}`}
+                ref={(el) => (soonCharsRef.current[i] = el)}
+                className="heading__char heading__char--italic"
+              >
+                {char}
+              </span>
+            ))}
             <div className="heading__underline-container">
               <svg width="100%" height="100%" viewBox="0 0 100 12" preserveAspectRatio="none">
                 <path
