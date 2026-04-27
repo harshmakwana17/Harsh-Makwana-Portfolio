@@ -390,7 +390,7 @@ export default function Preloader({ onComplete }) {
           letterSpacing="7"
         >
           <textPath href="#c4" textLength="836" lengthAdjust="spacing">
-            2025 · Frontend Animator ·{' '}
+            2026 · Frontend Animator ·{' '}
           </textPath>
         </text>
       </svg>
