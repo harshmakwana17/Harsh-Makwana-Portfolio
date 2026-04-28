@@ -128,8 +128,26 @@
 //   );
 // }
 
+
+
+
+
+
+
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
+
+/*
+  FONTS: Typekit kit kxo3pgz — same as original index3.html
+  Add to your index.html <head>:
+    <link rel="stylesheet" href="https://use.typekit.net/kxo3pgz.css">
+
+  Circle font map (exact original):
+    c1 → ivymode,          sans-serif  weight 300
+    c2 → modesto-condensed, serif      weight 400
+    c3 → minerva-modern,   sans-serif  weight 400
+    c4 → niagara,          serif       weight 300
+*/
 
 export default function Preloader({ onComplete }) {
   const wrapperRef  = useRef(null);
@@ -140,8 +158,6 @@ export default function Preloader({ onComplete }) {
   const enterRef    = useRef(null);
   const enterBgRef  = useRef(null);
   const startTLRef  = useRef(null);
-
-  // Keep hover listeners as refs so we can remove them on click
   const hoverInRef  = useRef(null);
   const hoverOutRef = useRef(null);
 
@@ -155,75 +171,72 @@ export default function Preloader({ onComplete }) {
   useEffect(() => {
     const circles = getCircles();
 
-    // ── Setup ────────────────────────────────────────────────────────────────
-    // transformOrigin '50% 50%' works for SVG text elements rotating around
-    // the SVG center — matches the original demo-2 intro.js exactly
+    // setup()
     gsap.set(circles, { transformOrigin: '50% 50%', opacity: 0, scale: 0.8 });
     gsap.set(enterRef.current, { opacity: 0, scale: 0.8, pointerEvents: 'none' });
 
-    // ── Start timeline (mirrors intro.js → start()) ───────────────────────
+    // start() — exact index3
     startTLRef.current = gsap.timeline()
-      // Alternate rotation: even index rotates +90, odd -90
+      .addLabel('start', 0)
       .to(circles, {
         duration: 3,
         ease: 'expo.inOut',
-        rotation: (i) => (i % 2 === 0 ? 90 : -90),
+        rotation: 90,
         stagger: { amount: 0.4 },
-      }, 0)
-      // Fade + scale in — circles + enter button together
+      }, 'start')
       .to([...circles, enterRef.current], {
         duration: 3,
         ease: 'expo.inOut',
-        opacity: 1,
+        startAt: { opacity: 0, scale: 0.8 },
         scale: 1,
+        opacity: 1,
         stagger: { amount: 0.4 },
-      }, 0)
-      // Enable hover only after 2s
+      }, 'start')
       .add(() => {
         gsap.set(enterRef.current, { pointerEvents: 'auto' });
         bindHover();
-      }, 2);
+      }, 'start+=2');
 
     return () => startTLRef.current?.kill();
   }, []);
 
-  // ── Hover (mirrors initEvents) ────────────────────────────────────────────
   const bindHover = () => {
     const btn = enterRef.current;
 
+    // mouseenter — exact index3
     hoverInRef.current = () => {
       const circles = getCircles();
       gsap.killTweensOf([enterBgRef.current, ...circles]);
-
       gsap.to(enterBgRef.current, {
-        duration: 1,
+        duration: 1.3,
         ease: 'expo',
         scale: 1.4,
       });
       gsap.to(circles, {
-        duration: 1,
+        duration: 0.5,
         ease: 'expo',
-        scale: 1.15,
-        // alternate direction per circle — exact demo-2 behaviour
-        rotation: (i) => (i % 2 ? '-=90' : '+=90'),
-        opacity: 0.4,
+        rotation: '+=120',
+        scale: 0.5,
+        opacity: 0.2,
+        stagger: { amount: -0.15 },
       });
     };
 
+    // mouseleave — exact index3 (no killTweensOf)
     hoverOutRef.current = () => {
       const circles = getCircles();
       gsap.to(enterBgRef.current, {
-        duration: 1,
-        ease: 'expo',
+        duration: 2,
+        ease: 'elastic.out(1, 0.4)',
         scale: 1,
       });
       gsap.to(circles, {
-        duration: 1,
-        ease: 'expo',
+        duration: 2,
+        ease: 'elastic.out(1, 0.4)',
         scale: 1,
-        rotation: (i) => (i % 2 ? '+=120' : '-=120'),
+        rotation: '-=120',
         opacity: 1,
-        stagger: { amount: -0.2 },
+        stagger: { amount: 0.15 },
       });
     };
 
@@ -237,7 +250,7 @@ export default function Preloader({ onComplete }) {
     if (hoverOutRef.current) btn.removeEventListener('mouseleave', hoverOutRef.current);
   };
 
-  // ── Enter click (mirrors intro.js → enter()) ──────────────────────────────
+  // enter() — exact index3
   const handleEnterClick = () => {
     const circles = getCircles();
     startTLRef.current?.kill();
@@ -245,28 +258,27 @@ export default function Preloader({ onComplete }) {
     gsap.set(enterRef.current, { pointerEvents: 'none' });
 
     gsap.timeline()
-      // Button shrinks away
+      .addLabel('start', 0)
       .to(enterRef.current, {
         duration: 0.6,
         ease: 'back.in',
         scale: 0.2,
         opacity: 0,
-      }, 0)
-      // Circles collapse to center (scale: 0) — demo-2 exact
+      }, 'start')
       .to(circles, {
         duration: 0.8,
         ease: 'back.in',
-        scale: 0,
+        scale: 1.6,
         opacity: 0,
-        stagger: { amount: -0.4 },
-      }, 0)
-      // Fade out wrapper then hand off
+        rotation: '-=20',
+        stagger: { amount: 0.3 },
+      }, 'start')
       .to(wrapperRef.current, {
-        duration: 0.4,
+        duration: 0.3,
         opacity: 0,
         ease: 'power2.inOut',
-      }, 0.7)
-      .add(() => onComplete?.(), 1.0);
+      }, 'start+=0.65')
+      .add(() => onComplete?.(), 'start+=0.9');
   };
 
   return (
@@ -276,34 +288,36 @@ export default function Preloader({ onComplete }) {
         position: 'fixed',
         inset: 0,
         zIndex: 9999,
-        background: '#0d0d10',
+        background: '#08080a',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'hidden',
       }}
     >
-      {/* Subtle gold glow behind button */}
+      {/* Subtle glow behind button */}
       <div
         style={{
           position: 'absolute',
           width: '420px',
           height: '420px',
           borderRadius: '50%',
-          background:
-            'radial-gradient(circle, rgba(201,169,110,0.07) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(201,169,110,0.06) 0%, transparent 70%)',
           pointerEvents: 'none',
         }}
       />
 
-      {/* ── Circular SVG ──────────────────────────────────────────────────────
-          viewBox 1400×1400 — font-size in SVG user units (not css px)
-          textLength fills full circumference per circle:
-            c1 r=450.5 → 2πr ≈ 2830
-            c2 r=318.5 → 2πr ≈ 2001
-            c3 r=213.5 → 2πr ≈ 1341
-            c4 r=133   → 2πr ≈  836
-      ──────────────────────────────────────────────────────────────────────── */}
+      {/* ── Circular SVG ───────────────────────────────────────────────────
+          viewBox 1400×1400 | width 186vmin = original --dim
+          font-size in SVG user units:
+            c1 ivymode        300 → 180u  (clamp 170-180px)
+            c2 modesto-condensed 400 → 153u  (clamp 136-153px)
+            c3 minerva-modern 400 → 120u  (clamp 110-120px)
+            c4 niagara        300 →  94u  (clamp 85-94px)
+          textLength = 2πr:
+            c1 r=450.5→2830  c2 r=318.5→2001
+            c3 r=213.5→1341  c4 r=133→836
+      ─────────────────────────────────────────────────────────────────── */}
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 1400 1400"
@@ -312,85 +326,72 @@ export default function Preloader({ onComplete }) {
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: '190vmin',
-          height: '190vmin',
+          width: '186vmin',
+          height: '186vmin',
           pointerEvents: 'none',
           overflow: 'visible',
         }}
       >
         <defs>
-          <path
-            id="c1"
-            d="M250,700.5 A450.5,450.5 0 1 1 1151,700.5 A450.5,450.5 0 1 1 250,700.5"
-          />
-          <path
-            id="c2"
-            d="M382,700.5 A318.5,318.5 0 1 1 1019,700.5 A318.5,318.5 0 1 1 382,700.5"
-          />
-          <path
-            id="c3"
-            d="M487,700.5 A213.5,213.5 0 1 1 914,700.5 A213.5,213.5 0 1 1 487,700.5"
-          />
-          <path
-            id="c4"
-            d="M567.5,700.5 A133,133 0 1 1 833.5,700.5 A133,133 0 1 1 567.5,700.5"
-          />
+          <path id="c1" d="M250,700.5 A450.5,450.5 0 1 1 1151,700.5 A450.5,450.5 0 1 1 250,700.5" />
+          <path id="c2" d="M382,700.5 A318.5,318.5 0 1 1 1019,700.5 A318.5,318.5 0 1 1 382,700.5" />
+          <path id="c3" d="M487,700.5 A213.5,213.5 0 1 1 914,700.5 A213.5,213.5 0 1 1 487,700.5" />
+          <path id="c4" d="M567.5,700.5 A133,133 0 1 1 833.5,700.5 A133,133 0 1 1 567.5,700.5" />
         </defs>
 
-        {/* Circle 1 — outermost — portfolio identity */}
+        {/* c1 — ivymode, sans-serif, weight 300 */}
         <text
           ref={circle1Ref}
-          fontFamily="'Playfair Display', Georgia, serif"
-          fontSize="80"
+          fontFamily="ivymode, sans-serif"
+          fontSize="180"
           fontWeight="300"
-          fill="#c9a96e"
-          letterSpacing="2"
+          fill="#7a7168"
+          letterSpacing="-2"
         >
-          <textPath href="#c1" textLength="2830" lengthAdjust="spacing">
-            Harsh Makwana · Portfolio · Coming Soon · Webflow Developer ·{' '}
+          <textPath href="#c1" textLength="2830" lengthAdjust="spacingAndGlyphs">
+            HARSH MAKWANA · PORTFOLIO · COMING SOON · WEBFLOW ·
           </textPath>
         </text>
 
-        {/* Circle 2 — skills (italic) */}
+        {/* c2 — modesto-condensed, serif, weight 400 */}
         <text
           ref={circle2Ref}
-          fontFamily="'Playfair Display', Georgia, serif"
-          fontSize="60"
+          fontFamily="modesto-condensed, serif"
+          fontSize="153"
           fontWeight="400"
-          fontStyle="italic"
-          fill="#a08550"
-          letterSpacing="2"
+          fill="#6e6560"
+          letterSpacing="-2"
         >
-          <textPath href="#c2" textLength="2001" lengthAdjust="spacing">
-            GSAP · Webflow CMS · WordPress · ScrollTrigger ·{' '}
+          <textPath href="#c2" textLength="2001" lengthAdjust="spacingAndGlyphs">
+            GSAP · WEBFLOW CMS · WORDPRESS · SCROLLTRIGGER ·
           </textPath>
         </text>
 
-        {/* Circle 3 — location */}
+        {/* c3 — minerva-modern, sans-serif, weight 400 */}
         <text
           ref={circle3Ref}
-          fontFamily="'Inter', -apple-system, sans-serif"
-          fontSize="44"
-          fontWeight="300"
-          fill="#6b5535"
-          letterSpacing="5"
+          fontFamily="minerva-modern, sans-serif"
+          fontSize="120"
+          fontWeight="400"
+          fill="#5c5650"
+          letterSpacing="-2"
         >
-          <textPath href="#c3" textLength="1341" lengthAdjust="spacing">
-            Jamnagar · Gujarat · India ·{' '}
+          <textPath href="#c3" textLength="1341" lengthAdjust="spacingAndGlyphs">
+            JAMNAGAR · GUJARAT · INDIA ·
           </textPath>
         </text>
 
-        {/* Circle 4 — innermost — year + role */}
+        {/* c4 — niagara, serif, weight 300 */}
         <text
           ref={circle4Ref}
-          fontFamily="'Inter', -apple-system, sans-serif"
-          fontSize="30"
-          fontWeight="400"
-          fill="#3f2e18"
-          letterSpacing="7"
+          fontFamily="niagara, serif"
+          fontSize="94"
+          fontWeight="300"
+          fill="#4a4440"
+          letterSpacing="-2"
         >
-          <textPath href="#c4" textLength="836" lengthAdjust="spacing">
-            2026 · Frontend Animator ·{' '}
+          <textPath href="#c4" textLength="836" lengthAdjust="spacingAndGlyphs">
+            ANIMATOR · 2025 ·
           </textPath>
         </text>
       </svg>
@@ -405,8 +406,8 @@ export default function Preloader({ onComplete }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          width: '96px',
-          height: '96px',
+          width: '90px',
+          height: '90px',
           border: 'none',
           background: 'none',
           cursor: 'pointer',
@@ -414,14 +415,13 @@ export default function Preloader({ onComplete }) {
           opacity: 0,
         }}
       >
-        {/* Gold circle */}
         <div
           ref={enterBgRef}
           style={{
             position: 'absolute',
             inset: 0,
             borderRadius: '50%',
-            background: 'linear-gradient(135deg, #c9a96e 0%, #a08050 100%)',
+            background: '#d6ae7c',
             transformOrigin: 'center',
           }}
         />
@@ -433,7 +433,7 @@ export default function Preloader({ onComplete }) {
             fontWeight: 500,
             letterSpacing: '3px',
             textTransform: 'uppercase',
-            color: '#0d0d10',
+            color: '#1d1812',
           }}
         >
           Enter
