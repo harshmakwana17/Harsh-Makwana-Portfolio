@@ -391,7 +391,7 @@ export default function Preloader({ onComplete }) {
           letterSpacing="-2"
         >
           <textPath href="#c4" textLength="836" lengthAdjust="spacingAndGlyphs">
-            ANIMATOR · 2025 ·
+            ANIMATOR · 2026 ·
           </textPath>
         </text>
       </svg>
