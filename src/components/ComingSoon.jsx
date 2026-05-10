@@ -7,13 +7,14 @@ export default function ComingSoon() {
   const badgeRef = useRef(null);
   const headingCharsRef = useRef([]);
   const soonCharsRef = useRef([]);
-  const subtitleRef = useRef(null);
+  const subtitleCharsRef = useRef([]);
   const socialsRef = useRef([]);
   const dividersRef = useRef([]);
   const spotlightRef = useRef(null);
   const roleRefs = useRef([]);
   const underlineRef = useRef(null);
   const underlinePulseRef = useRef(null);
+  const shapesRef = useRef([]);
 
   const roles = [
     'Webflow Developer',
@@ -24,6 +25,7 @@ export default function ComingSoon() {
 
   const comingText = 'Coming';
   const soonText = 'Soon';
+  const subtitleText = 'Something new is being crafted';
 
   const handleSocialMouseMove = (e, el) => {
     if (!el) return;
@@ -51,6 +53,8 @@ export default function ComingSoon() {
 
   useEffect(() => {
     let mouseMoveHandler;
+
+    if (!containerRef.current) return;
 
     const ctx = gsap.context(() => {
       // --- Blobs smooth float animation ---
@@ -87,6 +91,34 @@ export default function ComingSoon() {
         });
       });
 
+      // --- Floating Shapes Animation ---
+      shapesRef.current.forEach((shape, i) => {
+        if (!shape) return;
+
+        gsap.set(shape, {
+          x: Math.random() * window.innerWidth,
+          y: Math.random() * window.innerHeight,
+          rotation: Math.random() * 360,
+        });
+
+        gsap.to(shape, {
+          x: `+=${(Math.random() - 0.5) * 200}`,
+          y: `+=${(Math.random() - 0.5) * 200}`,
+          rotation: `+=${(Math.random() - 0.5) * 360}`,
+          duration: 15 + Math.random() * 10,
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut',
+          delay: i * 0.5,
+        });
+
+        gsap.to(shape, {
+          opacity: 0.2,
+          duration: 2,
+          delay: 1 + i * 0.2,
+        });
+      });
+
       // --- Mouse events (Parallax + Spotlight) ---
       mouseMoveHandler = (e) => {
         const { clientX, clientY } = e;
@@ -113,6 +145,18 @@ export default function ComingSoon() {
             x: `+=${deltaX * speed * 0.08}`,
             y: `+=${deltaY * speed * 0.08}`,
             duration: 3,
+            ease: 'power2.out',
+            overwrite: false,
+          });
+        });
+
+        shapesRef.current.forEach((shape, i) => {
+          if (!shape) return;
+          const speed = (i + 1) * 15;
+          gsap.to(shape, {
+            x: `+=${deltaX * speed * 0.05}`,
+            y: `+=${deltaY * speed * 0.05}`,
+            duration: 4,
             ease: 'power2.out',
             overwrite: false,
           });
@@ -168,11 +212,23 @@ export default function ComingSoon() {
         '-=0.5'
       );
 
+      const subtitleChars = subtitleCharsRef.current.filter(Boolean);
       revealTl.fromTo(
-        subtitleRef.current,
-        { opacity: 0, y: 15 },
-        { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' },
-        '-=0.3'
+        subtitleChars,
+        {
+          opacity: 0,
+          y: 10,
+          filter: 'blur(8px)',
+        },
+        {
+          opacity: 1,
+          y: 0,
+          filter: 'blur(0px)',
+          duration: 0.8,
+          stagger: 0.02,
+          ease: 'power3.out'
+        },
+        '-=0.5'
       );
 
       const socialEls = socialsRef.current.filter(Boolean);
@@ -201,8 +257,21 @@ export default function ComingSoon() {
         dividerEls,
         { opacity: 0, scaleY: 0 },
         { opacity: 1, scaleY: 1, duration: 0.4, stagger: 0.08 },
-        '-=0.4'
+        '-=0.8'
       );
+
+      // --- Heading Floating/Wave Loop ---
+      const allHeadingChars = [...comingChars, ...soonChars];
+      allHeadingChars.forEach((char, i) => {
+        gsap.to(char, {
+          y: -8,
+          duration: 1.5,
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut',
+          delay: i * 0.1,
+        });
+      });
 
       // --- Underline Animation ---
       const underline = underlineRef.current;
@@ -283,7 +352,7 @@ export default function ComingSoon() {
       };
 
       startRoleLoop();
-    }, containerRef);
+    }, containerRef.current);
 
     return () => {
       if (mouseMoveHandler) {
@@ -304,6 +373,23 @@ export default function ComingSoon() {
         <div ref={(el) => (blobsRef.current[2] = el)} className="blob blob--3" />
         <div ref={(el) => (blobsRef.current[3] = el)} className="blob blob--4" />
         <div ref={spotlightRef} className="spotlight" />
+      </div>
+
+      <div className="shapes-container">
+        {[...Array(6)].map((_, i) => (
+          <svg
+            key={i}
+            ref={(el) => (shapesRef.current[i] = el)}
+            className="shape-outline"
+            width="60"
+            height="60"
+            viewBox="0 0 100 100"
+          >
+            {i % 3 === 0 && <circle cx="50" cy="50" r="40" />}
+            {i % 3 === 1 && <path d="M50 10 L90 90 L10 90 Z" />}
+            {i % 3 === 2 && <rect x="15" y="15" width="70" height="70" />}
+          </svg>
+        ))}
       </div>
 
       <main className="coming-soon">
@@ -372,8 +458,16 @@ export default function ComingSoon() {
           ))}
         </div>
 
-        <p ref={subtitleRef} className="subtitle">
-          Something new is being crafted
+        <p className="subtitle">
+          {subtitleText.split('').map((char, i) => (
+            <span
+              key={i}
+              ref={(el) => (subtitleCharsRef.current[i] = el)}
+              className="subtitle__char"
+            >
+              {char === ' ' ? '\u00A0' : char}
+            </span>
+          ))}
         </p>
 
         <div className="socials">

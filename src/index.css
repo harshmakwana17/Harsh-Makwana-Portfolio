@@ -29,18 +29,18 @@
   --font-mono: 'Space Mono', monospace;
 
 
-  --color-bg:            #dad4d1;
---color-text:          #292725;
---color-button:        #a99c90;
---color-text-button:   #272524;
---color-text-circle-1: #272524;
---color-text-circle-2: #272524;
---color-text-circle-3: #272524;
---color-text-circle-4: #272524;
---font-circle-1:       'Playfair Display', serif;
---font-circle-2:       'Playfair Display', serif;
---font-circle-3:       'Playfair Display', serif;
---font-circle-4:       'Playfair Display', serif;
+  --color-bg: #dad4d1;
+  --color-text: #292725;
+  --color-button: #a99c90;
+  --color-text-button: #272524;
+  --color-text-circle-1: #272524;
+  --color-text-circle-2: #272524;
+  --color-text-circle-3: #272524;
+  --color-text-circle-4: #272524;
+  --font-circle-1: 'Playfair Display', serif;
+  --font-circle-2: 'Playfair Display', serif;
+  --font-circle-3: 'Playfair Display', serif;
+  --font-circle-4: 'Playfair Display', serif;
 }
 
 html {
@@ -235,20 +235,40 @@ a {
   right: 15%;
 }
 
-/* Spotlight Follower */
+/* Spotlight Aura */
 .spotlight {
   position: fixed;
-  inset: -300px;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(201, 169, 110, 0.12) 0%, transparent 70%);
+  inset: -400px;
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, rgba(201, 169, 110, 0.15) 0%, rgba(201, 169, 110, 0.05) 40%, transparent 70%);
   border-radius: 50%;
   pointer-events: none;
-  z-index: 2;
-  filter: blur(80px);
+  z-index: 15;
+  filter: blur(60px);
   opacity: 0;
   will-change: transform, opacity;
+  mix-blend-mode: screen;
 }
+
+/* Floating Shapes */
+.shapes-container {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.shape-outline {
+  position: absolute;
+  stroke: var(--accent);
+  stroke-width: 1px;
+  fill: none;
+  opacity: 0.1;
+  will-change: transform, opacity;
+}
+
 
 /* ========================================
    MAIN CONTENT
@@ -429,6 +449,14 @@ a {
   color: var(--text-secondary);
   text-align: center;
   margin-bottom: 0;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.subtitle__char {
+  display: inline-block;
+  will-change: transform, opacity, filter;
 }
 
 /* Social Links */
